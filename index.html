@@ -813,5 +813,21 @@ renderCatalog();
 renderDetail(1);
 goPage('beranda');
 </script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+
+  const firebaseConfig = {
+    apiKey:"AIzaSyCZE0YWmAX1nebGFAKIOg30fTk9y5PTp0U",
+    authDomain: "sibaca.firebaseapp.com",
+    projectId: "sibaca",
+    storageBucket: "sibaca.firebasestorage.app",
+    messagingSenderId: "340864677601",
+    appId: "1:340864677601:web:5b6417c0547c5ce37be9a0"
+  };
+
+  const app = initializeApp(firebaseConfig);
+</script>
+
 </body>
 </html>
