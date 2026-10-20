@@ -592,7 +592,7 @@
           <button class="btn btn-primary btn-block" data-page="peminjaman">Masuk</button>
           <a class="forgot" href="#">Lupa password?</a>
         </div>
-        <div id="formDaftar" style="display:none;">
+        <div style="display:none;">
           <div class="field">
             <label>Nama Lengkap</label>
             <div class="input-icon">
@@ -827,6 +827,334 @@ goPage('beranda');
   };
 
   const app = initializeApp(firebaseConfig);
+</script>
+
+<script type="module">
+  import {
+    getAuth,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    updateProfile
+  } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+
+  const auth = getAuth();
+
+  // LOGIN
+  const formMasuk = document.getElementById("formMasuk");
+
+  if (formMasuk) {
+    const emailLogin = formMasuk.querySelector('input[type="email"]');
+    const passwordLogin = formMasuk.querySelector('input[type="password"]');
+    const tombolLogin = formMasuk.querySelector("button");
+
+    tombolLogin.addEventListener("click", async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      try {
+        await signInWithEmailAndPassword(
+          auth,
+          emailLogin.value.trim(),
+          passwordLogin.value
+        );
+
+        alert("Login berhasil!");
+        goPage("peminjaman");
+      } catch (error) {
+        alert("Login gagal. Periksa email dan password kamu.");
+        console.error(error);
+      }
+    });
+  }
+
+  // DAFTAR AKUN
+  const formDaftar = document.getElementById("formDaftar");
+
+  if (formDaftar) {
+    const inputs = formDaftar.querySelectorAll("input");
+    const tombolDaftar = formDaftar.querySelector("button");
+
+    tombolDaftar.addEventListener("click", async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const nama = inputs[0].value.trim();
+      const email = inputs[1].value.trim();
+      const password = inputs[2].value;
+
+      if (!nama || !email || !password) {
+        alert("Isi semua kolom terlebih dahulu.");
+        return;
+      }
+
+      try {
+        const hasil = await createUserWithEmailAndPassword(
+          auth, email, password
+        );
+
+        await updateProfile(hasil.user, {
+          displayName: nama
+        });
+
+        alert("Pendaftaran berhasil!");
+        goPage("peminjaman");
+      } catch (error) {
+        if (error.code === "auth/email-already-in-use") {
+          alert("Email ini sudah terdaftar.");
+        } else if (error.code === "auth/weak-password") {
+          alert("Password minimal 6 karakter.");
+        } else {
+          alert("Pendaftaran gagal: " + error.message);
+        }
+      }
+    });
+  }
+</script>
+
+<script type="module">
+  import {
+    getAuth,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    updateProfile
+  } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+
+  const auth = getAuth();
+
+  // LOGIN
+  const formMasuk = document.getElementById("formMasuk");
+
+  if (formMasuk) {
+    const emailLogin = formMasuk.querySelector('input[type="email"]');
+    const passwordLogin = formMasuk.querySelector('input[type="password"]');
+    const tombolLogin = formMasuk.querySelector("button");
+
+    tombolLogin.addEventListener("click", async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      try {
+        await signInWithEmailAndPassword(
+          auth,
+          emailLogin.value.trim(),
+          passwordLogin.value
+        );
+
+        alert("Login berhasil!");
+        goPage("peminjaman");
+      } catch (error) {
+        alert("Login gagal. Periksa email dan password kamu.");
+        console.error(error);
+      }
+    });
+  }
+
+  // DAFTAR AKUN
+  const formDaftar = document.getElementById("formDaftar");
+
+  if (formDaftar) {
+    const inputs = formDaftar.querySelectorAll("input");
+    const tombolDaftar = formDaftar.querySelector("button");
+
+    tombolDaftar.addEventListener("click", async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const nama = inputs[0].value.trim();
+      const email = inputs[1].value.trim();
+      const password = inputs[2].value;
+
+      if (!nama || !email || !password) {
+        alert("Isi semua kolom terlebih dahulu.");
+        return;
+      }
+
+      try {
+        const hasil = await createUserWithEmailAndPassword(
+          auth, email, password
+        );
+
+        await updateProfile(hasil.user, {
+          displayName: nama
+        });
+
+        alert("Pendaftaran berhasil!");
+        goPage("peminjaman");
+      } catch (error) {
+        if (error.code === "auth/email-already-in-use") {
+          alert("Email ini sudah terdaftar.");
+        } else if (error.code === "auth/weak-password") {
+          alert("Password minimal 6 karakter.");
+        } else {
+          alert("Pendaftaran gagal: " + error.message);
+        }
+      }
+    });
+  }
+</script>
+
+<script type="module">
+  import {
+    getAuth,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    updateProfile
+  } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+
+  const auth = getAuth();
+
+  // LOGIN
+  const formMasuk = document.getElementById("formMasuk");
+
+  if (formMasuk) {
+    const emailLogin = formMasuk.querySelector('input[type="email"]');
+    const passwordLogin = formMasuk.querySelector('input[type="password"]');
+    const tombolLogin = formMasuk.querySelector("button");
+
+    tombolLogin.addEventListener("click", async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      try {
+        await signInWithEmailAndPassword(
+          auth,
+          emailLogin.value.trim(),
+          passwordLogin.value
+        );
+
+        alert("Login berhasil!");
+        goPage("peminjaman");
+      } catch (error) {
+        alert("Login gagal. Periksa email dan password kamu.");
+        console.error(error);
+      }
+    });
+  }
+
+  // DAFTAR AKUN
+  const formDaftar = document.getElementById("formDaftar");
+
+  if (formDaftar) {
+    const inputs = formDaftar.querySelectorAll("input");
+    const tombolDaftar = formDaftar.querySelector("button");
+
+    tombolDaftar.addEventListener("click", async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const nama = inputs[0].value.trim();
+      const email = inputs[1].value.trim();
+      const password = inputs[2].value;
+
+      if (!nama || !email || !password) {
+        alert("Isi semua kolom terlebih dahulu.");
+        return;
+      }
+
+      try {
+        const hasil = await createUserWithEmailAndPassword(
+          auth, email, password
+        );
+
+        await updateProfile(hasil.user, {
+          displayName: nama
+        });
+
+        alert("Pendaftaran berhasil!");
+        goPage("peminjaman");
+      } catch (error) {
+        if (error.code === "auth/email-already-in-use") {
+          alert("Email ini sudah terdaftar.");
+        } else if (error.code === "auth/weak-password") {
+          alert("Password minimal 6 karakter.");
+        } else {
+          alert("Pendaftaran gagal: " + error.message);
+        }
+      }
+    });
+  }
+</script>
+
+<script type="module">
+  import {
+    getAuth,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    updateProfile
+  } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+
+  const auth = getAuth();
+
+  // LOGIN
+  const formMasuk = document.getElementById("formMasuk");
+
+  if (formMasuk) {
+    const emailLogin = formMasuk.querySelector('input[type="email"]');
+    const passwordLogin = formMasuk.querySelector('input[type="password"]');
+    const tombolLogin = formMasuk.querySelector("button");
+
+    tombolLogin.addEventListener("click", async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      try {
+        await signInWithEmailAndPassword(
+          auth,
+          emailLogin.value.trim(),
+          passwordLogin.value
+        );
+
+        alert("Login berhasil!");
+        goPage("peminjaman");
+      } catch (error) {
+        alert("Login gagal. Periksa email dan password kamu.");
+        console.error(error);
+      }
+    });
+  }
+
+  // DAFTAR AKUN
+  const formDaftar = document.getElementById("formDaftar");
+
+  if (formDaftar) {
+    const inputs = formDaftar.querySelectorAll("input");
+    const tombolDaftar = formDaftar.querySelector("button");
+
+    tombolDaftar.addEventListener("click", async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const nama = inputs[0].value.trim();
+      const email = inputs[1].value.trim();
+      const password = inputs[2].value;
+
+      if (!nama || !email || !password) {
+        alert("Isi semua kolom terlebih dahulu.");
+        return;
+      }
+
+      try {
+        const hasil = await createUserWithEmailAndPassword(
+          auth, email, password
+        );
+
+        await updateProfile(hasil.user, {
+          displayName: nama
+        });
+
+        alert("Pendaftaran berhasil!");
+        goPage("peminjaman");
+      } catch (error) {
+        if (error.code === "auth/email-already-in-use") {
+          alert("Email ini sudah terdaftar.");
+        } else if (error.code === "auth/weak-password") {
+          alert("Password minimal 6 karakter.");
+        } else {
+          alert("Pendaftaran gagal: " + error.message);
+        }
+      }
+    });
+  }
 </script>
 
 </body>
