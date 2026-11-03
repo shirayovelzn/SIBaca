@@ -753,6 +753,7 @@ async function loadBooks(){
     if(!db) throw new Error('Database belum terhubung. Periksa koneksi internet.');
     const snap = await db.collection('books').get();
     books = snap.docs.map(d => normalizeBook(d.id, d.data()));
+    console.log(books);
   }catch(e){
     console.error(e);
     books = [];
