@@ -769,9 +769,11 @@ async function loadBooks(){
 }
 
 function bookCoverHTML(b){
+  if(b.cover){
+    return `<div class="book-cover"><img src="${b.cover}" alt="${b.title}" style="width:100%;height:100%;object-fit:cover;"></div>`;
+  }
   return `<div class="book-cover" style="background:${b.color}"><div class="title-mini">${b.title}</div></div>`;
 }
-
 function renderHomeBooks(){
   const grid = document.getElementById('bookGridHome');
   grid.innerHTML = !books.length ? emptyBooksMsg() : sortedBooks().slice(0,4).map(b=>`
