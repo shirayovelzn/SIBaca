@@ -393,7 +393,7 @@
         </div>
       </div>
       <div class="hero-visual">
-        <div class="badge-float">📚 1.200+ judul buku</div>
+        <div class="badge-float" id="bookCountBadge">📚 Koleksi buku SIB</div>
         <div class="shelf-row">
           <div class="shelf-book" style="height:120px;background:#F59E0B;"></div>
           <div class="shelf-book" style="height:150px;background:#D9A404;"></div>
@@ -720,16 +720,52 @@ document.querySelectorAll('#logoNav,#logoAuth,#logoFooter').forEach(el=>el.src=L
 
 // ---- book data ----
 const covers = ["#C8102E","#FFC72C","#D9A404","#F59E0B","#6E1414","#E23744"];
-const books = [
-  {id:1,title:"Laskar Pelangi",author:"Andrea Hirata",cat:"Fiksi",year:2005,publisher:"Bentang Pustaka",pages:529,stock:5,color:"#C8102E",desc:"Laskar Pelangi adalah novel yang menceritakan tentang persahabatan, perjuangan, dan mimpi sekelompok anak di Belitung untuk meraih masa depan yang lebih baik."},
-  {id:2,title:"Bumi",author:"Tere Liye",cat:"Fiksi",year:2014,publisher:"Gramedia Pustaka Utama",pages:440,stock:3,color:"#FFC72C",desc:"Bumi mengisahkan petualangan Raib dan teman-temannya menjelajahi dunia paralel penuh keajaiban serta rahasia yang mengubah hidup mereka."},
-  {id:3,title:"Sains untuk Semua",author:"Tim Penulis",cat:"Sains & Teknologi",year:2020,publisher:"Balai Pustaka",pages:212,stock:6,color:"#D9A404",desc:"Buku referensi yang menyajikan konsep-konsep sains dasar secara sederhana dan menarik untuk siswa sekolah menengah."},
-  {id:4,title:"Sejarah Indonesia",author:"Tim Penulis",cat:"Sejarah",year:2019,publisher:"Kemendikbud",pages:340,stock:4,color:"#F59E0B",desc:"Merangkum perjalanan sejarah bangsa Indonesia dari masa kerajaan hingga era kemerdekaan dengan bahasa yang mudah dipahami."},
-  {id:5,title:"Negeri 5 Menara",author:"Ahmad Fuadi",cat:"Fiksi",year:2009,publisher:"Gramedia Pustaka Utama",pages:423,stock:2,color:"#6E1414",desc:"Kisah enam santri di Pondok Madani yang mengejar mimpi mereka hingga ke berbagai penjuru dunia, penuh semangat dan motivasi."},
-  {id:6,title:"Matematika Praktis",author:"Budi Santoso",cat:"Sains & Teknologi",year:2021,publisher:"Erlangga",pages:180,stock:7,color:"#E23744",desc:"Panduan belajar matematika dengan pendekatan praktis dan contoh soal yang relevan untuk kehidupan sehari-hari."},
-  {id:7,title:"Kumpulan Puisi Chairil Anwar",author:"Chairil Anwar",cat:"Bahasa",year:1998,publisher:"Dian Rakyat",pages:96,stock:3,color:"#D9A404",desc:"Antologi puisi karya Chairil Anwar, salah satu penyair besar Indonesia yang dikenal dengan gaya bahasanya yang lugas dan penuh makna."},
-  {id:8,title:"Seni & Budaya Nusantara",author:"Tim Penulis",cat:"Seni & Budaya",year:2018,publisher:"Balai Pustaka",pages:256,stock:4,color:"#F59E0B",desc:"Mengenalkan kekayaan seni dan budaya dari berbagai daerah di Indonesia, dilengkapi ilustrasi dan penjelasan sejarahnya."},
-];
+let books = [];
+let booksLoaded = false;
+let bookError = '';
+
+function normalizeBook(id, d){
+  const color = (typeof d.color === 'string' && /^#[0-9a-fA-F]{3,8}$/.test(d.color)) ? d.color : '#C8102E';
+  return {
+    id: id,
+    title: esc(d.title || 'Tanpa judul'),
+    author: esc(d.author || '-'),
+    cat: String(d.category || d.cat || 'Lainnya'),
+    year: d.year || '-',
+    publisher: esc(d.publisher || '-'),
+    pages: d.pages || '-',
+    stock: Number(d.stock) || 0,
+    color: color,
+    desc: esc(d.description || d.desc || '')
+  };
+}
+function sortedBooks(){
+  return books.slice().sort((a,b) => (Number(b.year)||0) - (Number(a.year)||0));
+}
+function emptyBooksMsg(){
+  const t = !booksLoaded ? 'Memuat buku...' : (bookError || 'Belum ada buku di katalog.');
+  return `<p style="color:var(--ink-soft);grid-column:1/-1;padding:20px 0;">${t}</p>`;
+}
+async function loadBooks(){
+  booksLoaded = false; bookError = '';
+  try{
+    if(!db) throw new Error('Database belum terhubung. Periksa koneksi internet.');
+    const snap = await db.collection('books').get();
+    books = snap.docs.map(d => normalizeBook(d.id, d.data()));
+  }catch(e){
+    console.error(e);
+    books = [];
+    bookError = (e.code === 'permission-denied')
+      ? 'Tidak bisa membaca data buku. Periksa Rules Firestore (koleksi books).'
+      : 'Gagal memuat buku: ' + (e.message || e);
+  }
+  booksLoaded = true;
+  renderHomeBooks();
+  const activeCat = document.querySelector('#categoryFilter a.active');
+  renderCatalog(activeCat ? activeCat.dataset.cat : 'Semua', document.getElementById('catalogSearch').value);
+  const badge = document.getElementById('bookCountBadge');
+  if(badge) badge.textContent = '📚 ' + books.length + ' judul buku';
+}
 
 function bookCoverHTML(b){
   return `<div class="book-cover" style="background:${b.color}"><div class="title-mini">${b.title}</div></div>`;
@@ -737,13 +773,13 @@ function bookCoverHTML(b){
 
 function renderHomeBooks(){
   const grid = document.getElementById('bookGridHome');
-  grid.innerHTML = books.slice(0,4).map(b=>`
+  grid.innerHTML = !books.length ? emptyBooksMsg() : sortedBooks().slice(0,4).map(b=>`
     <div class="book-card" data-detail="${b.id}">
       ${bookCoverHTML(b)}
       <div class="book-info">
         <p class="btitle">${b.title}</p>
         <p class="bauthor">${b.author}</p>
-        <span class="tag">${b.cat}</span>
+        <span class="tag">${esc(b.cat)}</span>
       </div>
     </div>`).join('');
 }
@@ -751,7 +787,8 @@ function renderHomeBooks(){
 function renderCatalog(filterCat="Semua", query=""){
   const list = document.getElementById('catalogResults');
   const q = query.trim().toLowerCase();
-  const filtered = books.filter(b=>{
+  if(!books.length){ list.innerHTML = emptyBooksMsg(); return; }
+  const filtered = sortedBooks().filter(b=>{
     const matchCat = filterCat==="Semua" || b.cat===filterCat;
     const matchQ = !q || b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q) || b.cat.toLowerCase().includes(q);
     return matchCat && matchQ;
@@ -766,28 +803,29 @@ function renderCatalog(filterCat="Semua", query=""){
       <div class="result-mid">
         <p class="rtitle">${b.title}</p>
         <p class="rauthor">${b.author}</p>
-        <span class="tag">${b.cat}</span>
+        <span class="tag">${esc(b.cat)}</span>
       </div>
       <button class="btn btn-outline btn-sm" data-detail="${b.id}">Lihat Detail</button>
     </div>`).join('');
 }
 
 function renderDetail(id){
-  const b = books.find(x=>x.id===id) || books[0];
+  const b = books.find(x=>x.id===id);
+  if(!b){ document.getElementById('detailContent').innerHTML = '<p style="color:var(--ink-soft);">Buku tidak ditemukan.</p>'; return; }
   document.getElementById('detailContent').innerHTML = `
     <div class="detail-cover" style="background:${b.color}"><div class="title-mini">${b.title}</div></div>
     <div class="detail-info">
       <h1>${b.title}</h1>
       <p class="author">${b.author}</p>
-      <span class="tag">${b.cat}</span>
+      <span class="tag">${esc(b.cat)}</span>
       <div class="meta-grid">
         <div class="meta-item"><div class="lbl">Tahun Terbit</div><div class="val">${b.year}</div></div>
         <div class="meta-item"><div class="lbl">Penerbit</div><div class="val">${b.publisher}</div></div>
-        <div class="meta-item"><div class="lbl">Jumlah Halaman</div><div class="val">${b.pages} halaman</div></div>
-        <div class="meta-item"><div class="lbl">Stok</div><div class="val stock-ok">Tersedia (${b.stock})</div></div>
+        <div class="meta-item"><div class="lbl">Jumlah Halaman</div><div class="val">${b.pages==='-' ? '-' : b.pages+' halaman'}</div></div>
+        <div class="meta-item"><div class="lbl">Stok</div><div class="val ${b.stock>0?'stock-ok':''}">${b.stock>0 ? 'Tersedia ('+b.stock+')' : 'Stok habis'}</div></div>
       </div>
       <h4 style="margin:0 0 8px;">Deskripsi</h4>
-      <p style="color:var(--ink-soft);font-size:0.92rem;">${b.desc}</p>
+      <p style="color:var(--ink-soft);font-size:0.92rem;">${b.desc || 'Belum ada deskripsi.'}</p>
       <div class="detail-actions">
         <button class="btn btn-primary" data-borrow="${b.id}">Pinjam Buku</button>
         <button class="btn btn-outline">Tambah ke Daftar</button>
@@ -822,7 +860,7 @@ document.addEventListener('click', (e)=>{
   const detailTarget = e.target.closest('[data-detail]');
   if(detailTarget){
     e.preventDefault();
-    renderDetail(parseInt(detailTarget.dataset.detail));
+    renderDetail(detailTarget.dataset.detail);
     goPage('detail');
     return;
   }
@@ -1061,6 +1099,7 @@ async function loadLoans(){
 async function borrowBook(id){
   const b = books.find(x => x.id === id);
   if(!b) return;
+  if(b.stock <= 0){ toast('Stok buku ini sedang habis.'); return; }
   if(!currentUser){
     goPage('login');
     setTimeout(()=>showMsg('loginMsg','Masuk dulu untuk meminjam buku.','ok'),0);
@@ -1095,7 +1134,7 @@ async function borrowBook(id){
 }
 document.addEventListener('click', e => {
   const t = e.target.closest('[data-borrow]');
-  if(t){ e.preventDefault(); borrowBook(parseInt(t.dataset.borrow)); }
+  if(t){ e.preventDefault(); borrowBook(t.dataset.borrow); }
 });
 
 // ===== Menu sidebar anggota =====
@@ -1124,7 +1163,7 @@ document.getElementById('saveNameBtn').addEventListener('click', async ()=>{
 // init
 renderHomeBooks();
 renderCatalog();
-renderDetail(1);
+loadBooks();
 goPage('beranda');
 </script>
 </body>
