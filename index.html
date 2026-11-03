@@ -296,6 +296,21 @@
   .auth-msg.ok{background:#FFF0C2;color:#7A4B00;border:1px solid #FFD966;}
   .member-menu a{cursor:pointer;}
   .btn:disabled{opacity:.6;cursor:not-allowed;}
+  .stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:20px 0 24px;}
+  .stat-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px;}
+  .stat-card .num{font-family:'Poppins',sans-serif;font-size:2rem;font-weight:800;color:var(--primary);line-height:1;}
+  .stat-card .lbl{font-size:0.84rem;color:var(--ink-soft);margin-top:6px;}
+  .stat-card.gold .num{color:#B8860B;}
+  .view-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:26px;}
+  .view-card h3{margin:0 0 6px;font-size:1.25rem;}
+  .view-card p.sub{margin:0;color:var(--ink-soft);font-size:0.92rem;}
+  .profile-row{display:grid;grid-template-columns:160px 1fr;gap:12px;padding:14px 0;border-top:1px solid var(--line);align-items:center;font-size:0.92rem;}
+  .profile-row .k{color:var(--ink-soft);font-weight:500;}
+  .profile-row input{width:100%;max-width:340px;padding:10px 12px;border-radius:9px;border:1px solid var(--line);font-family:inherit;font-size:0.9rem;outline:none;}
+  .profile-row input:focus{border-color:var(--secondary);}
+  @media(max-width:700px){.stat-grid{grid-template-columns:1fr;}.profile-row{grid-template-columns:1fr;gap:4px;}}
+  .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:#2A1010;color:#fff;padding:12px 20px;border-radius:12px;font-size:0.9rem;font-weight:500;box-shadow:0 12px 30px rgba(0,0,0,0.25);opacity:0;pointer-events:none;transition:all .3s ease;z-index:100;max-width:90vw;text-align:center;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
   footer{background:#3B0A0A;color:#D9CBB8;padding:44px 0 22px;margin-top:20px;}
   .footer-top{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:36px;margin-bottom:32px;}
   .footer-brand{display:flex;gap:12px;align-items:center;margin-bottom:12px;}
@@ -480,21 +495,55 @@
 <!-- ========== PEMINJAMAN ========== -->
 <div class="page" id="page-peminjaman">
   <div class="wrap" style="padding-top:32px;padding-bottom:60px;">
-    <h1 style="font-size:1.7rem;margin:0 0 22px;">Peminjaman Buku</h1>
+    <h1 style="font-size:1.7rem;margin:0 0 22px;" id="memberTitle">Peminjaman Buku</h1>
     <div class="member-layout">
       <aside class="member-side">
         <div class="member-avatar" id="memberAvatar">?</div>
         <h4 id="memberName">Anggota</h4>
         <div class="nis" id="memberEmail">-</div>
         <ul class="member-menu">
-          <li><a>Dashboard</a></li>
-          <li><a class="active">Peminjaman</a></li>
-          <li><a>Riwayat</a></li>
-          <li><a>Profil</a></li>
+          <li><a data-view="dashboard">Dashboard</a></li>
+          <li><a data-view="peminjaman" class="active">Peminjaman</a></li>
+          <li><a data-view="riwayat">Riwayat</a></li>
+          <li><a data-view="profil">Profil</a></li>
           <li><a id="logoutLink">Keluar</a></li>
         </ul>
       </aside>
       <div>
+        <div id="view-dashboard" style="display:none;">
+          <div class="view-card">
+            <h3>Halo, <span id="dashName">Anggota</span>! 👋</h3>
+            <p class="sub">Selamat datang di SIBaca. Ini ringkasan aktivitas membaca kamu.</p>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-card"><div class="num" id="statActive">0</div><div class="lbl">Buku sedang dipinjam</div></div>
+            <div class="stat-card gold"><div class="num" id="statDone">0</div><div class="lbl">Buku sudah dikembalikan</div></div>
+            <div class="stat-card"><div class="num" id="statDue">-</div><div class="lbl">Jatuh tempo terdekat</div></div>
+          </div>
+          <a class="btn btn-primary" data-page="katalog">Jelajahi Koleksi Buku</a>
+        </div>
+
+        <div id="view-riwayat" style="display:none;">
+          <table class="loan-table">
+            <thead><tr><th>No</th><th>Judul Buku</th><th>Tgl Pinjam</th><th>Tgl Jatuh Tempo</th><th>Status</th></tr></thead>
+            <tbody id="loanBodyAll1"><tr><td colspan="5" style="color:var(--ink-soft);">Memuat data...</td></tr></tbody>
+          </table>
+        </div>
+
+        <div id="view-profil" style="display:none;">
+          <div class="view-card">
+            <h3>Profil Saya</h3>
+            <p class="sub" style="margin-bottom:14px;">Data akun SIBaca kamu.</p>
+            <div class="profile-row"><div class="k">Nama</div><div><input type="text" id="profName" placeholder="Nama lengkap"></div></div>
+            <div class="profile-row"><div class="k">Email</div><div id="profEmail">-</div></div>
+            <div class="profile-row"><div class="k">Akun dibuat</div><div id="profCreated">-</div></div>
+            <div class="profile-row"><div class="k">Terakhir masuk</div><div id="profLast">-</div></div>
+            <div class="auth-msg" id="profileMsg" style="margin-top:14px;"></div>
+            <button class="btn btn-primary btn-sm" id="saveNameBtn" style="margin-top:6px;">Simpan Nama</button>
+          </div>
+        </div>
+
+        <div id="view-peminjaman">
         <div class="tabs">
           <button class="tab-btn active" data-tab="dipinjam">Buku Dipinjam</button>
           <button class="tab-btn" data-tab="riwayat">Riwayat Peminjaman</button>
@@ -502,21 +551,15 @@
         <div id="tabDipinjam">
           <table class="loan-table">
             <thead><tr><th>No</th><th>Judul Buku</th><th>Tgl Pinjam</th><th>Tgl Jatuh Tempo</th><th>Status</th></tr></thead>
-            <tbody>
-              <tr><td>1</td><td>Laskar Pelangi</td><td>10 Apr 2026</td><td>24 Apr 2026</td><td><span class="status-pill status-dipinjam">Dipinjam</span></td></tr>
-              <tr><td>2</td><td>Bumi</td><td>12 Apr 2026</td><td>26 Apr 2026</td><td><span class="status-pill status-dipinjam">Dipinjam</span></td></tr>
-              <tr><td>3</td><td>Sains untuk Semua</td><td>15 Apr 2026</td><td>29 Apr 2026</td><td><span class="status-pill status-dipinjam">Dipinjam</span></td></tr>
-            </tbody>
+            <tbody id="loanBodyActive"><tr><td colspan="5" style="color:var(--ink-soft);">Memuat data...</td></tr></tbody>
           </table>
         </div>
         <div id="tabRiwayat" style="display:none;">
           <table class="loan-table">
-            <thead><tr><th>No</th><th>Judul Buku</th><th>Tgl Pinjam</th><th>Tgl Kembali</th><th>Status</th></tr></thead>
-            <tbody>
-              <tr><td>1</td><td>Sejarah Indonesia</td><td>2 Mar 2026</td><td>16 Mar 2026</td><td><span class="status-pill status-selesai">Selesai</span></td></tr>
-              <tr><td>2</td><td>Negeri 5 Menara</td><td>18 Feb 2026</td><td>3 Mar 2026</td><td><span class="status-pill status-selesai">Selesai</span></td></tr>
-            </tbody>
+            <thead><tr><th>No</th><th>Judul Buku</th><th>Tgl Pinjam</th><th>Tgl Jatuh Tempo</th><th>Status</th></tr></thead>
+            <tbody id="loanBodyAll2"><tr><td colspan="5" style="color:var(--ink-soft);">Memuat data...</td></tr></tbody>
           </table>
+        </div>
         </div>
       </div>
     </div>
@@ -629,6 +672,8 @@
   </div>
 </div>
 
+<div class="toast" id="toast"></div>
+
 <footer>
   <div class="wrap">
     <div class="footer-top">
@@ -666,6 +711,7 @@
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
 let currentUser = null;
 // ---- logo injection (base64) ----
@@ -743,7 +789,7 @@ function renderDetail(id){
       <h4 style="margin:0 0 8px;">Deskripsi</h4>
       <p style="color:var(--ink-soft);font-size:0.92rem;">${b.desc}</p>
       <div class="detail-actions">
-        <button class="btn btn-primary" data-page="login">Pinjam Buku</button>
+        <button class="btn btn-primary" data-borrow="${b.id}">Pinjam Buku</button>
         <button class="btn btn-outline">Tambah ke Daftar</button>
       </div>
     </div>`;
@@ -874,6 +920,12 @@ function updateUserUI(user){
     document.getElementById('memberName').textContent = name;
     document.getElementById('memberEmail').textContent = user.email;
     document.getElementById('memberAvatar').textContent = initials(name);
+    document.getElementById('dashName').textContent = name;
+    document.getElementById('profName').value = user.displayName || '';
+    document.getElementById('profEmail').textContent = user.email;
+    const fmt = s => s ? new Date(s).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}) : '-';
+    document.getElementById('profCreated').textContent = fmt(user.metadata && user.metadata.creationTime);
+    document.getElementById('profLast').textContent = fmt(user.metadata && user.metadata.lastSignInTime);
     btn.textContent = 'Keluar';
     btn.removeAttribute('data-page');
   } else {
@@ -889,6 +941,7 @@ if(auth){
   auth.onAuthStateChanged(user=>{
     currentUser = user;
     updateUserUI(user);
+    loadLoans();
     const active = document.querySelector('.page.active');
     if(user && active && active.id==='page-login') goPage('peminjaman');
     if(!user && active && active.id==='page-peminjaman') goPage('login');
@@ -947,6 +1000,126 @@ document.getElementById('forgotLink').addEventListener('click', async (e)=>{
 
 ['loginEmail','loginPass'].forEach(id=>document.getElementById(id).addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); }));
 ['regName','regEmail','regPass'].forEach(id=>document.getElementById(id).addEventListener('keydown',e=>{ if(e.key==='Enter') doRegister(); }));
+
+// ===== PEMINJAMAN (Firestore) =====
+let db = null;
+let loans = [];
+try{ db = firebase.firestore(); }catch(err){ console.error('Firestore gagal dimuat:', err); }
+
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtShort = d => d.toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'});
+const toDate = t => (t && t.toDate) ? t.toDate() : null;
+
+let toastTimer = null;
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>el.classList.remove('show'), 3200);
+}
+
+function loanRow(l, i){
+  const ld = toDate(l.loanDate), dd = toDate(l.dueDate);
+  const cls = l.status === 'Selesai' ? 'status-selesai' : 'status-dipinjam';
+  return `<tr><td>${i+1}</td><td>${esc(l.bookTitle)}</td><td>${ld ? fmtShort(ld) : '-'}</td><td>${dd ? fmtShort(dd) : '-'}</td><td><span class="status-pill ${cls}">${esc(l.status || 'Dipinjam')}</span></td></tr>`;
+}
+
+function renderLoans(errMsg){
+  const active = loans.filter(l => l.status !== 'Selesai');
+  const done = loans.filter(l => l.status === 'Selesai');
+  const empty = txt => `<tr><td colspan="5" style="color:var(--ink-soft);">${txt}</td></tr>`;
+  const msgAll = errMsg || 'Belum ada riwayat peminjaman.';
+  const htmlAll = loans.length ? loans.map(loanRow).join('') : empty(msgAll);
+  const htmlActive = active.length ? active.map(loanRow).join('') : empty(errMsg || 'Belum ada buku yang dipinjam.');
+  document.getElementById('loanBodyAll1').innerHTML = htmlAll;
+  document.getElementById('loanBodyAll2').innerHTML = htmlAll;
+  document.getElementById('loanBodyActive').innerHTML = htmlActive;
+  document.getElementById('statActive').textContent = active.length;
+  document.getElementById('statDone').textContent = done.length;
+  const dues = active.map(l => toDate(l.dueDate)).filter(Boolean).sort((a,b)=>a-b);
+  document.getElementById('statDue').textContent = dues.length ? dues[0].toLocaleDateString('id-ID',{day:'numeric',month:'short'}) : '-';
+}
+
+async function loadLoans(){
+  if(!db || !currentUser){ loans = []; renderLoans(); return; }
+  try{
+    const snap = await db.collection('loans').where('uid','==',currentUser.uid).get();
+    loans = snap.docs.map(d => Object.assign({id:d.id}, d.data()));
+    loans.sort((a,b) => (toDate(b.loanDate)||0) - (toDate(a.loanDate)||0));
+    renderLoans();
+  }catch(e){
+    console.error(e);
+    loans = [];
+    const m = (e.code === 'permission-denied')
+      ? 'Database belum siap: periksa Rules Firestore (koleksi loans).'
+      : 'Gagal memuat data peminjaman: ' + (e.message || e);
+    renderLoans(m);
+  }
+}
+
+async function borrowBook(id){
+  const b = books.find(x => x.id === id);
+  if(!b) return;
+  if(!currentUser){
+    goPage('login');
+    setTimeout(()=>showMsg('loginMsg','Masuk dulu untuk meminjam buku.','ok'),0);
+    return;
+  }
+  if(!db) return toast('Database belum terhubung. Periksa koneksi internet.');
+  if(loans.some(l => l.bookId === String(id) && l.status !== 'Selesai')){
+    toast('Kamu sedang meminjam buku ini.');
+    return;
+  }
+  const now = new Date();
+  const due = new Date(now.getTime() + 14*24*60*60*1000);
+  try{
+    await db.collection('loans').add({
+      uid: currentUser.uid,
+      bookId: String(id),
+      bookTitle: b.title,
+      loanDate: firebase.firestore.Timestamp.fromDate(now),
+      dueDate: firebase.firestore.Timestamp.fromDate(due),
+      status: 'Dipinjam'
+    });
+    await loadLoans();
+    showMemberView('peminjaman');
+    goPage('peminjaman');
+    toast('Berhasil meminjam "' + b.title + '". Jatuh tempo ' + fmtShort(due) + '.');
+  }catch(e){
+    console.error(e);
+    toast(e.code === 'permission-denied'
+      ? 'Gagal: Rules Firestore belum mengizinkan peminjaman.'
+      : 'Gagal meminjam buku: ' + (e.message || e));
+  }
+}
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-borrow]');
+  if(t){ e.preventDefault(); borrowBook(parseInt(t.dataset.borrow)); }
+});
+
+// ===== Menu sidebar anggota =====
+const viewTitles = {dashboard:'Dashboard', peminjaman:'Peminjaman Buku', riwayat:'Riwayat Peminjaman', profil:'Profil Saya'};
+function showMemberView(v){
+  Object.keys(viewTitles).forEach(k=>{
+    document.getElementById('view-'+k).style.display = (k===v) ? 'block' : 'none';
+  });
+  document.querySelectorAll('.member-menu a[data-view]').forEach(a=>a.classList.toggle('active', a.dataset.view===v));
+  document.getElementById('memberTitle').textContent = viewTitles[v];
+}
+document.querySelectorAll('.member-menu a[data-view]').forEach(a=>{
+  a.addEventListener('click', ()=>showMemberView(a.dataset.view));
+});
+document.getElementById('saveNameBtn').addEventListener('click', async ()=>{
+  const name = document.getElementById('profName').value.trim();
+  if(!auth || !auth.currentUser) return;
+  if(!name) return showMsg('profileMsg','Nama tidak boleh kosong.');
+  try{
+    await auth.currentUser.updateProfile({displayName:name});
+    updateUserUI(auth.currentUser);
+    showMsg('profileMsg','Nama berhasil disimpan.','ok');
+  }catch(e){ showMsg('profileMsg', friendlyError(e)); }
+});
 
 // init
 renderHomeBooks();
