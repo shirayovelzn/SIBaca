@@ -736,6 +736,7 @@ function normalizeBook(id, d){
     pages: d.pages || '-',
     stock: Number(d.stock) || 0,
     color: color,
+    cover: esc(d.cover || ''),
     desc: esc(d.description || d.desc || '')
   };
 }
